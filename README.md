@@ -6,7 +6,8 @@
 
 <p align="center">
   <b>La tua scheda personaggio per Dungeons & Dragons 5e sempre con te su Android.</b><br>
-  Un'applicazione mobile nativa, leggera e reattiva con interfaccia high-fantasy ispirata ai manuali D&D, calcoli matematici 5e automatici, gestione slot incantesimi e supporto completo per importazione ed esportazione JSON.
+  Un'applicazione mobile nativa, leggera e reattiva con interfaccia high-fantasy ispirata ai manuali D&D, calcoli matematici 5e automatici, gestione slot incantesimi e supporto completo per importazione ed esportazione JSON.<br>
+  Sviluppato da <a href="https://github.com/Gryve"><b>Gryve</b></a>.
 </p>
 
 ---
@@ -14,7 +15,7 @@
 ## 🌟 Caratteristiche Principali
 
 * 📜 **Importazione & Esportazione JSON**:
-  * Compatibilità nativa al 100% con i file esportati da [SheetMaker](file:///D:/documenti/coding/SheetMaker) (es. `Elandor_Dawnwhisper_5e.json`).
+  * Compatibilità nativa al 100% con i file esportati dall'app companion [SheetMaker](https://github.com/Gryve/SheetMaker) (es. `Elandor_Dawnwhisper_5e.json`).
   * Esporta e condividi in qualsiasi momento la tua scheda aggiornata in formato JSON standard tramite lo Storage Access Framework di Android.
 
 * 🧙‍♂️ **Creazione Schede da Zero ("NUOVO EROE")**:
@@ -31,7 +32,7 @@
 * ⚔️ **Combattimento Dinamico & Grimorio Incantesimi**:
   * **Tracker HP Hero**: contatore visuale con pulsanti rapidi $(-5, -1, +1, +5)$ e gestione HP Temporanei.
   * **Tiri Salvezza contro Morte**: indicatori grafici interattivi per 3 successi e 3 fallimenti.
-  * **Gemme Arcane per Slot Incantesimi**: monitora e consuma i tuoi slot di livello 1–9 toccando le gemme zaffiro.
+  * **Gestione Completa Slot Incantesimi (Liv. 1–9)**: aggiungi slot di livello superiore (3, 4, ..., 9), modifica il numero di slot massimi per livello al volo o dal dialog dedicato, e consuma gli slot toccando le gemme zaffiro.
   * **Gestione Armi & Incantesimi**: aggiungi, modifica ed elimina attacchi personalizzati e formule magiche con note di gittata, componenti, concentrazione e rituali.
 
 * 🎨 **Design High-Fantasy & Personalizzazione Grafica**:
@@ -69,7 +70,7 @@
 ### Comandi Gradle
 
 ```bash
-# Esegui la suite completa di test unitari (11/11 test)
+# Esegui la suite completa di test unitari (12/12 test)
 ./gradlew testDebugUnitTest
 
 # Compila l'APK di Debug
@@ -85,9 +86,10 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## 🔗 Applicazione Companion: SheetMaker
 
-PocketSheet dialoga perfettamente con [SheetMaker](file:///D:/documenti/coding/SheetMaker), l'applicazione web/desktop Python per PC che consente di compilare schede D&D 5.5e grafiche, generare PDF pronti per la stampa ed esportare il file `.json` da importare direttamente su smartphone in PocketSheet.
+PocketSheet dialoga perfettamente con [SheetMaker](https://github.com/Gryve/SheetMaker), l'applicazione web/desktop Python per PC creata da [Gryve](https://github.com/Gryve) che consente di compilare schede D&D 5.5e grafiche, generare PDF pronti per la stampa ed esportare il file `.json` da importare direttamente su smartphone in PocketSheet.
 
 ---
 
-## 📜 Licenza
-Distribuito per uso personale da giocatori e master di D&D 5e / 5.5e.
+## 👤 Autore
+Sviluppato da [Gryve](https://github.com/Gryve).
+Distribuito per giocatori e master di D&D 5e / 5.5e.
