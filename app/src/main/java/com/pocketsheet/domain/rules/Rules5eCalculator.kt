@@ -40,12 +40,12 @@ object Rules5eCalculator {
     }
 
     /**
-     * Calculates passive perception: 10 + WIS mod + (Perception Prof Level * Proficiency Bonus)
+     * Calculates passive perception: 10 + WIS mod + (Perception Prof Level * PB) + Extra Bonus
      */
-    fun calculatePassivePerception(wisdomScore: Int, perceptionSkillLevel: Int, level: Int): Int {
+    fun calculatePassivePerception(wisdomScore: Int, perceptionSkillLevel: Int, level: Int, extraBonus: Int = 0): Int {
         val wisMod = calculateModifier(wisdomScore)
         val pb = calculateProficiencyBonus(level)
-        return 10 + wisMod + (perceptionSkillLevel * pb)
+        return 10 + wisMod + (perceptionSkillLevel * pb) + extraBonus
     }
 
     /**

@@ -60,6 +60,9 @@ data class Character(
     val skillPerformance: Int = 0,
     val skillPersuasion: Int = 0,
 
+    // Custom manual extra bonuses for skills (e.g. "skill_athletics" to 1)
+    val customSkillBonuses: Map<String, Int> = emptyMap(),
+
     // Armor Proficiencies
     val armorLight: Boolean = false,
     val armorMedium: Boolean = false,
@@ -100,7 +103,11 @@ data class Character(
     val ep: Int = 0,
     val gp: Int = 0,
     val pp: Int = 0
-)
+) {
+    fun getSkillExtraBonus(skillKey: String): Int {
+        return customSkillBonuses[skillKey] ?: 0
+    }
+}
 
 data class Weapon(
     val name: String,

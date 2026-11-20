@@ -76,6 +76,9 @@ data class Character5eJson(
     @SerialName("skill_performance") val skillPerformance: Int = 0,
     @SerialName("skill_persuasion") val skillPersuasion: Int = 0,
     
+    // Custom Extra Bonuses for Skills (e.g. "skill_athletics" -> 1)
+    @SerialName("custom_skill_bonuses") val customSkillBonuses: Map<String, Int> = emptyMap(),
+
     // Armor Proficiencies
     @SerialName("armor_light") val armorLight: Boolean = false,
     @SerialName("armor_medium") val armorMedium: Boolean = false,

@@ -181,4 +181,63 @@ class CharacterCreationAndEditingTest {
         assertEquals(2, reimportedDto.spellSlotsTotal["3"])
         assertEquals(1, reimportedDto.spellSlotsTotal["9"])
     }
+
+    @Test
+    fun testCustomSkillBonusAndPassivePerception() {
+        val level = 3 // PB = +2
+        val wisdom = 14 // mod = +2
+        val strength = 16 // mod = +3
+        val pb = Rules5eCalculator.calculateProficiencyBonus(level)
+        assertEquals(2, pb)
+
+        val customBonuses = mapOf(
+            "skill_athletics" to 1, // Custom +1 from magical item/homebrew
+            "skill_perception" to 2  // Custom +2 from feat
+        )
+
+        val char = Character(
+            id = 5,
+            characterName = "Thorin",
+            level = level,
+            strength = strength,
+            wisdom = wisdom,
+            skillAthletics = 1, // Proficient -> 3 (strMod) + 2 (pb) = 5
+            skillPerception = 0, // Not proficient -> 2 (wisMod)
+            customSkillBonuses = customBonuses
+        )
+
+        // Verify skill extra bonuses
+        assertEquals(1, char.getSkillExtraBonus("skill_athletics"))
+        assertEquals(2, char.getSkillExtraBonus("skill_perception"))
+        assertEquals(0, char.getSkillExtraBonus("skill_stealth"))
+
+        // Total athletics: 3 (strMod) + (1 * 2 pb) + 1 (extra) = 6
+        val strMod = Rules5eCalculator.calculateModifier(char.strength)
+        val athleticsTotal = strMod + (char.skillAthletics * pb) + char.getSkillExtraBonus("skill_athletics")
+        assertEquals(6, athleticsTotal)
+
+        // Passive perception: 10 + 2 (wisMod) + 0 (prof) + 2 (extra) = 14
+        val passivePerception = Rules5eCalculator.calculatePassivePerception(
+            char.wisdom,
+            char.skillPerception,
+            char.level,
+            char.getSkillExtraBonus("skill_perception")
+        )
+        assertEquals(14, passivePerception)
+
+        // Test JSON serialization & round-trip
+        val jsonDto = CharacterMapper.domainToJson(char)
+        assertEquals(1, jsonDto.customSkillBonuses["skill_athletics"])
+        assertEquals(2, jsonDto.customSkillBonuses["skill_perception"])
+
+        val jsonString = defaultJson.encodeToString(Character5eJson.serializer(), jsonDto)
+        assertTrue(jsonString.contains("custom_skill_bonuses"))
+        assertTrue(jsonString.contains("\"skill_athletics\": 1"))
+
+        val reimportedDto = defaultJson.decodeFromString<Character5eJson>(jsonString)
+        val reimportedChar = CharacterMapper.jsonToDomain(reimportedDto, id = 5)
+
+        assertEquals(1, reimportedChar.getSkillExtraBonus("skill_athletics"))
+        assertEquals(2, reimportedChar.getSkillExtraBonus("skill_perception"))
+    }
 }

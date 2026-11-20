@@ -148,6 +148,41 @@ class OverviewViewModel(
         }
     }
 
+    fun updateSkillConfig(skillKey: String, profLevel: Int, extraBonus: Int) {
+        val current = _character.value ?: return
+        val map = current.customSkillBonuses.toMutableMap()
+        if (extraBonus == 0) {
+            map.remove(skillKey)
+        } else {
+            map[skillKey] = extraBonus
+        }
+
+        val updated = when (skillKey) {
+            "skill_athletics" -> current.copy(skillAthletics = profLevel, customSkillBonuses = map)
+            "skill_acrobatics" -> current.copy(skillAcrobatics = profLevel, customSkillBonuses = map)
+            "skill_sleight_of_hand" -> current.copy(skillSleightOfHand = profLevel, customSkillBonuses = map)
+            "skill_stealth" -> current.copy(skillStealth = profLevel, customSkillBonuses = map)
+            "skill_arcana" -> current.copy(skillArcana = profLevel, customSkillBonuses = map)
+            "skill_history" -> current.copy(skillHistory = profLevel, customSkillBonuses = map)
+            "skill_investigation" -> current.copy(skillInvestigation = profLevel, customSkillBonuses = map)
+            "skill_nature" -> current.copy(skillNature = profLevel, customSkillBonuses = map)
+            "skill_religion" -> current.copy(skillReligion = profLevel, customSkillBonuses = map)
+            "skill_animal_handling" -> current.copy(skillAnimalHandling = profLevel, customSkillBonuses = map)
+            "skill_insight" -> current.copy(skillInsight = profLevel, customSkillBonuses = map)
+            "skill_medicine" -> current.copy(skillMedicine = profLevel, customSkillBonuses = map)
+            "skill_perception" -> current.copy(skillPerception = profLevel, customSkillBonuses = map)
+            "skill_survival" -> current.copy(skillSurvival = profLevel, customSkillBonuses = map)
+            "skill_deception" -> current.copy(skillDeception = profLevel, customSkillBonuses = map)
+            "skill_intimidation" -> current.copy(skillIntimidation = profLevel, customSkillBonuses = map)
+            "skill_performance" -> current.copy(skillPerformance = profLevel, customSkillBonuses = map)
+            "skill_persuasion" -> current.copy(skillPersuasion = profLevel, customSkillBonuses = map)
+            else -> current.copy(customSkillBonuses = map)
+        }
+        viewModelScope.launch {
+            repository.updateCharacter(updated)
+        }
+    }
+
     fun updateCombatMetrics(ac: Int, initiative: String, speed: String, hitDiceSpent: Int) {
         val current = _character.value ?: return
         val updated = current.copy(

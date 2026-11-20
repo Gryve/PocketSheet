@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.pocketsheet.data.local.entity.CharacterEntity
 
-@Database(entities = [CharacterEntity::class], version = 1, exportSchema = false)
+@Database(entities = [CharacterEntity::class], version = 2, exportSchema = false)
 abstract class PocketSheetDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
 

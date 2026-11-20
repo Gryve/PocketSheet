@@ -65,6 +65,9 @@ data class CharacterEntity(
     val skillPerformance: Int = 0,
     val skillPersuasion: Int = 0,
 
+    // Custom extra skill bonuses
+    val customSkillBonusesJson: String = "{}",
+
     // Armor Proficiencies
     val armorLight: Boolean = false,
     val armorMedium: Boolean = false,

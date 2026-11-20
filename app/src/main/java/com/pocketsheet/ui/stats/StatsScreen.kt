@@ -1,11 +1,13 @@
 package com.pocketsheet.ui.stats
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -77,9 +79,15 @@ fun StatsScreen(
     val char = character ?: return
 
     val pb = Rules5eCalculator.calculateProficiencyBonus(char.level)
-    val passivePerception = Rules5eCalculator.calculatePassivePerception(char.wisdom, char.skillPerception, char.level)
+    val passivePerception = Rules5eCalculator.calculatePassivePerception(
+        char.wisdom,
+        char.skillPerception,
+        char.level,
+        char.getSkillExtraBonus("skill_perception")
+    )
 
     var editingAbility by remember { mutableStateOf<Pair<String, Int>?>(null) }
+    var editingSkill by remember { mutableStateOf<SkillInfo?>(null) }
 
     Scaffold(
         topBar = {
@@ -212,7 +220,7 @@ fun StatsScreen(
                 }
             }
 
-            // 18 Skills Table (Interactive: tap to cycle proficiency 0 -> 1 -> 2 -> 0!)
+            // 18 Skills Table (Interactive: tap to cycle proficiency 0 -> 1 -> 2 -> 0, or tap row to edit bonus!)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -220,7 +228,7 @@ fun StatsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     SectionHeader("ABILITÀ (18 SKILLS)")
-                    Text("○ Nessuna • ◆ Competenza • ◈ Maestria", fontSize = 10.sp, color = DndGoldDark)
+                    Text("Tocca riga per bonus extra", fontSize = 10.sp, color = DndGoldDark)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -233,30 +241,37 @@ fun StatsScreen(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         val skills = listOf(
-                            SkillInfo("Acrobazia", "DES", char.dexterity, char.skillAcrobatics),
-                            SkillInfo("Addestrare Animali", "SAG", char.wisdom, char.skillAnimalHandling),
-                            SkillInfo("Arcano", "INT", char.intelligence, char.skillArcana),
-                            SkillInfo("Atletica", "FOR", char.strength, char.skillAthletics),
-                            SkillInfo("Furtività", "DES", char.dexterity, char.skillStealth),
-                            SkillInfo("Indagare", "INT", char.intelligence, char.skillInvestigation),
-                            SkillInfo("Inganno", "CAR", char.charisma, char.skillDeception),
-                            SkillInfo("Intimidire", "CAR", char.charisma, char.skillIntimidation),
-                            SkillInfo("Intrattenere", "CAR", char.charisma, char.skillPerformance),
-                            SkillInfo("Intuizione", "SAG", char.wisdom, char.skillInsight),
-                            SkillInfo("Medicina", "SAG", char.wisdom, char.skillMedicine),
-                            SkillInfo("Natura", "INT", char.intelligence, char.skillNature),
-                            SkillInfo("Percezione", "SAG", char.wisdom, char.skillPerception),
-                            SkillInfo("Persuasione", "CAR", char.charisma, char.skillPersuasion),
-                            SkillInfo("Rapidità di Mano", "DES", char.dexterity, char.skillSleightOfHand),
-                            SkillInfo("Religione", "INT", char.intelligence, char.skillReligion),
-                            SkillInfo("Sopravvivenza", "SAG", char.wisdom, char.skillSurvival),
-                            SkillInfo("Storia", "INT", char.intelligence, char.skillHistory)
+                            SkillInfo("skill_acrobatics", "Acrobazia", "DES", char.dexterity, char.skillAcrobatics, char.getSkillExtraBonus("skill_acrobatics")),
+                            SkillInfo("skill_animal_handling", "Addestrare Animali", "SAG", char.wisdom, char.skillAnimalHandling, char.getSkillExtraBonus("skill_animal_handling")),
+                            SkillInfo("skill_arcana", "Arcano", "INT", char.intelligence, char.skillArcana, char.getSkillExtraBonus("skill_arcana")),
+                            SkillInfo("skill_athletics", "Atletica", "FOR", char.strength, char.skillAthletics, char.getSkillExtraBonus("skill_athletics")),
+                            SkillInfo("skill_stealth", "Furtività", "DES", char.dexterity, char.skillStealth, char.getSkillExtraBonus("skill_stealth")),
+                            SkillInfo("skill_investigation", "Indagare", "INT", char.intelligence, char.skillInvestigation, char.getSkillExtraBonus("skill_investigation")),
+                            SkillInfo("skill_deception", "Inganno", "CAR", char.charisma, char.skillDeception, char.getSkillExtraBonus("skill_deception")),
+                            SkillInfo("skill_intimidation", "Intimidire", "CAR", char.charisma, char.skillIntimidation, char.getSkillExtraBonus("skill_intimidation")),
+                            SkillInfo("skill_performance", "Intrattenere", "CAR", char.charisma, char.skillPerformance, char.getSkillExtraBonus("skill_performance")),
+                            SkillInfo("skill_insight", "Intuizione", "SAG", char.wisdom, char.skillInsight, char.getSkillExtraBonus("skill_insight")),
+                            SkillInfo("skill_medicine", "Medicina", "SAG", char.wisdom, char.skillMedicine, char.getSkillExtraBonus("skill_medicine")),
+                            SkillInfo("skill_nature", "Natura", "INT", char.intelligence, char.skillNature, char.getSkillExtraBonus("skill_nature")),
+                            SkillInfo("skill_perception", "Percezione", "SAG", char.wisdom, char.skillPerception, char.getSkillExtraBonus("skill_perception")),
+                            SkillInfo("skill_persuasion", "Persuasione", "CAR", char.charisma, char.skillPersuasion, char.getSkillExtraBonus("skill_persuasion")),
+                            SkillInfo("skill_sleight_of_hand", "Rapidità di Mano", "DES", char.dexterity, char.skillSleightOfHand, char.getSkillExtraBonus("skill_sleight_of_hand")),
+                            SkillInfo("skill_religion", "Religione", "INT", char.intelligence, char.skillReligion, char.getSkillExtraBonus("skill_religion")),
+                            SkillInfo("skill_survival", "Sopravvivenza", "SAG", char.wisdom, char.skillSurvival, char.getSkillExtraBonus("skill_survival")),
+                            SkillInfo("skill_history", "Storia", "INT", char.intelligence, char.skillHistory, char.getSkillExtraBonus("skill_history"))
                         )
 
                         skills.forEachIndexed { index, skill ->
-                            DndSkillRow(skill, pb) {
-                                viewModel.cycleSkillProficiency(skill.name)
-                            }
+                            DndSkillRow(
+                                skill = skill,
+                                pb = pb,
+                                onProfDotClick = {
+                                    viewModel.cycleSkillProficiency(skill.name)
+                                },
+                                onRowClick = {
+                                    editingSkill = skill
+                                }
+                            )
                             if (index < skills.size - 1) {
                                 HorizontalDivider(color = ParchmentBorder.copy(alpha = 0.5f), thickness = 1.dp)
                             }
@@ -314,6 +329,19 @@ fun StatsScreen(
             onSave = { newScore ->
                 editingAbility = null
                 viewModel.updateAbilityScore(code, newScore)
+            }
+        )
+    }
+
+    // Dialog for adjusting a skill (proficiency and custom extra bonus)
+    editingSkill?.let { skill ->
+        EditSkillDialog(
+            skill = skill,
+            pb = pb,
+            onDismiss = { editingSkill = null },
+            onSave = { newProf, newExtra ->
+                editingSkill = null
+                viewModel.updateSkillConfig(skill.key, newProf, newExtra)
             }
         )
     }
@@ -397,10 +425,12 @@ fun EditAbilityScoreDialog(
 }
 
 data class SkillInfo(
+    val key: String,
     val name: String,
     val abilityCode: String,
     val abilityScore: Int,
-    val profLevel: Int
+    val profLevel: Int,
+    val extraBonus: Int = 0
 )
 
 @Composable
@@ -508,48 +538,62 @@ fun DndSaveRow(name: String, abilityScore: Int, isProf: Boolean, pb: Int, onClic
 }
 
 @Composable
-fun DndSkillRow(skill: SkillInfo, pb: Int, onClick: () -> Unit) {
+fun DndSkillRow(
+    skill: SkillInfo,
+    pb: Int,
+    onProfDotClick: () -> Unit,
+    onRowClick: () -> Unit
+) {
     val baseMod = Rules5eCalculator.calculateModifier(skill.abilityScore)
-    val total = baseMod + (skill.profLevel * pb)
+    val total = baseMod + (skill.profLevel * pb) + skill.extraBonus
     val totalStr = if (total >= 0) "+$total" else "$total"
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(6.dp))
-            .clickable(onClick = onClick)
+            .clickable(onClick = onRowClick)
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Dot for cycling proficiency directly
         Box(
             modifier = Modifier
-                .size(18.dp)
+                .size(24.dp)
                 .clip(CircleShape)
-                .background(
-                    when (skill.profLevel) {
-                        1 -> DndGoldDark
-                        2 -> DndCrimson
-                        else -> Color.Transparent
-                    }
-                )
-                .border(
-                    2.dp,
-                    if (skill.profLevel > 0) DndGoldDark else ParchmentBorder,
-                    CircleShape
-                ),
+                .clickable(onClick = onProfDotClick),
             contentAlignment = Alignment.Center
         ) {
-            if (skill.profLevel == 2) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(DndGold)
-                )
+            Box(
+                modifier = Modifier
+                    .size(18.dp)
+                    .clip(CircleShape)
+                    .background(
+                        when (skill.profLevel) {
+                            1 -> DndGoldDark
+                            2 -> DndCrimson
+                            else -> Color.Transparent
+                        }
+                    )
+                    .border(
+                        2.dp,
+                        if (skill.profLevel > 0) DndGoldDark else ParchmentBorder,
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (skill.profLevel == 2) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(DndGold)
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             skill.name,
             modifier = Modifier.weight(1f),
@@ -557,14 +601,202 @@ fun DndSkillRow(skill: SkillInfo, pb: Int, onClick: () -> Unit) {
             fontWeight = if (skill.profLevel > 0) FontWeight.SemiBold else FontWeight.Normal,
             color = if (skill.profLevel > 0) DndCrimsonDark else InkTextPrimary
         )
+
+        // Custom bonus badge if present
+        if (skill.extraBonus != 0) {
+            val badgeText = if (skill.extraBonus > 0) "+${skill.extraBonus} extra" else "${skill.extraBonus} extra"
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(DndGold.copy(alpha = 0.2f))
+                    .border(1.dp, DndGoldDark.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = badgeText,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    color = DndCrimsonDark
+                )
+            }
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+
         Text(skill.abilityCode, fontSize = 11.sp, fontFamily = FontFamily.Serif, color = InkTextMuted)
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Text(
             totalStr,
             fontSize = 15.sp,
             fontFamily = FontFamily.Serif,
             fontWeight = FontWeight.Bold,
-            color = if (skill.profLevel > 0) DndCrimson else InkTextPrimary
+            color = if (skill.profLevel > 0 || skill.extraBonus != 0) DndCrimson else InkTextPrimary
         )
     }
+}
+
+@Composable
+fun EditSkillDialog(
+    skill: SkillInfo,
+    pb: Int,
+    onDismiss: () -> Unit,
+    onSave: (newProf: Int, newExtra: Int) -> Unit
+) {
+    var profLevel by remember { mutableStateOf(skill.profLevel) }
+    var extraBonus by remember { mutableStateOf(skill.extraBonus) }
+
+    val baseMod = Rules5eCalculator.calculateModifier(skill.abilityScore)
+    val profBonus = profLevel * pb
+    val total = baseMod + profBonus + extraBonus
+    val totalStr = if (total >= 0) "+$total" else "$total"
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Modifica ${skill.name}",
+                fontFamily = FontFamily.Serif,
+                fontWeight = FontWeight.Bold,
+                color = DndCrimson
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Formula breakdown box
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, ParchmentBorder, RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = ParchmentHeader),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Totale Calcolato: $totalStr",
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = DndCrimsonDark
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val baseModStr = if (baseMod >= 0) "+$baseMod" else "$baseMod"
+                        val extraStr = if (extraBonus >= 0) "+$extraBonus" else "$extraBonus"
+                        Text(
+                            text = "${skill.abilityCode} ($baseModStr) + Comp (+$profBonus) + Extra ($extraStr)",
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Serif,
+                            color = DndLeather
+                        )
+                    }
+                }
+
+                // Proficiency selection
+                Text(
+                    text = "Grado di Competenza",
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    color = DndGoldDark
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(
+                        0 to "Nessuna",
+                        1 to "Competente",
+                        2 to "Maestria"
+                    ).forEach { (level, label) ->
+                        val isSelected = profLevel == level
+                        Button(
+                            onClick = { profLevel = level },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSelected) DndCrimson else ParchmentCard,
+                                contentColor = if (isSelected) Color.White else InkTextPrimary
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) DndCrimsonDark else ParchmentBorder
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp, horizontal = 2.dp)
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Serif,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+
+                // Extra Bonus Stepper
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Bonus Extra / Manuale (Oggetti magici, Talenti)",
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold,
+                        color = DndGoldDark
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        IconButton(
+                            onClick = { extraBonus-- },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .border(1.5.dp, DndCrimson, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "Diminuisci", tint = DndCrimson)
+                        }
+
+                        val displayExtra = if (extraBonus >= 0) "+$extraBonus" else "$extraBonus"
+                        Text(
+                            text = displayExtra,
+                            fontSize = 28.sp,
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Black,
+                            color = InkTextPrimary
+                        )
+
+                        IconButton(
+                            onClick = { extraBonus++ },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .border(1.5.dp, DndGold, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Aumenta", tint = DndGoldDark)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(profLevel, extraBonus) },
+                colors = ButtonDefaults.buttonColors(containerColor = DndCrimson)
+            ) {
+                Text("Salva", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annulla", color = InkTextMuted)
+            }
+        }
+    )
 }

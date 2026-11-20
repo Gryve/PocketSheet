@@ -74,6 +74,7 @@ object CharacterMapper {
             skillIntimidation = json.skillIntimidation,
             skillPerformance = json.skillPerformance,
             skillPersuasion = json.skillPersuasion,
+            customSkillBonuses = json.customSkillBonuses,
             armorLight = json.armorLight,
             armorMedium = json.armorMedium,
             armorHeavy = json.armorHeavy,
@@ -167,6 +168,7 @@ object CharacterMapper {
             skillIntimidation = domain.skillIntimidation,
             skillPerformance = domain.skillPerformance,
             skillPersuasion = domain.skillPersuasion,
+            customSkillBonuses = domain.customSkillBonuses,
             armorLight = domain.armorLight,
             armorMedium = domain.armorMedium,
             armorHeavy = domain.armorHeavy,
@@ -262,6 +264,7 @@ object CharacterMapper {
             skillIntimidation = domain.skillIntimidation,
             skillPerformance = domain.skillPerformance,
             skillPersuasion = domain.skillPersuasion,
+            customSkillBonusesJson = defaultJson.encodeToString(domain.customSkillBonuses),
             armorLight = domain.armorLight,
             armorMedium = domain.armorMedium,
             armorHeavy = domain.armorHeavy,
@@ -324,6 +327,12 @@ object CharacterMapper {
             emptyMap()
         }
 
+        val customSkillBonuses = try {
+            defaultJson.decodeFromString<Map<String, Int>>(entity.customSkillBonusesJson)
+        } catch (_: Exception) {
+            emptyMap()
+        }
+
         return Character(
             id = entity.id,
             characterName = entity.characterName,
@@ -377,6 +386,7 @@ object CharacterMapper {
             skillIntimidation = entity.skillIntimidation,
             skillPerformance = entity.skillPerformance,
             skillPersuasion = entity.skillPersuasion,
+            customSkillBonuses = customSkillBonuses,
             armorLight = entity.armorLight,
             armorMedium = entity.armorMedium,
             armorHeavy = entity.armorHeavy,
