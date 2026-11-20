@@ -141,4 +141,44 @@ class CharacterCreationAndEditingTest {
         assertEquals("Dissonant Whispers", reimported.spells[0].name)
         assertEquals("Pipes of Haunting", reimported.attunement1)
     }
+
+    @Test
+    fun testManageAndAddHigherLevelSpellSlots() {
+        val initialSlots = mapOf("1" to 4, "2" to 2)
+        var char = Character(
+            characterName = "Elandor",
+            spellSlotsTotal = initialSlots,
+            spellSlotsExpended = mapOf("1" to 1, "2" to 0)
+        )
+
+        // Verify initial state
+        assertEquals(4, char.spellSlotsTotal["1"])
+        assertEquals(2, char.spellSlotsTotal["2"])
+        assertEquals(null, char.spellSlotsTotal["3"])
+
+        // Player gains 3rd level slots (2 slots of level 3) and increases 1st level to 5
+        val updatedMap = char.spellSlotsTotal.toMutableMap().apply {
+            this["1"] = 5
+            this["3"] = 2
+            this["9"] = 1 // 9th level slot!
+        }
+
+        char = char.copy(spellSlotsTotal = updatedMap)
+
+        assertEquals(5, char.spellSlotsTotal["1"])
+        assertEquals(2, char.spellSlotsTotal["2"])
+        assertEquals(2, char.spellSlotsTotal["3"])
+        assertEquals(1, char.spellSlotsTotal["9"])
+
+        // Export and round-trip verification
+        val jsonDto = CharacterMapper.domainToJson(char)
+        val jsonString = defaultJson.encodeToString(Character5eJson.serializer(), jsonDto)
+
+        assertTrue(jsonString.contains("\"3\": 2"))
+        assertTrue(jsonString.contains("\"9\": 1"))
+
+        val reimportedDto = defaultJson.decodeFromString<Character5eJson>(jsonString)
+        assertEquals(2, reimportedDto.spellSlotsTotal["3"])
+        assertEquals(1, reimportedDto.spellSlotsTotal["9"])
+    }
 }

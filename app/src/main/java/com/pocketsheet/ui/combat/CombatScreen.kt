@@ -28,6 +28,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +38,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +52,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -93,6 +97,7 @@ fun CombatScreen(
     var showAddWeaponDialog by remember { mutableStateOf(false) }
     var showAddSpellDialog by remember { mutableStateOf(false) }
     var showEditCombatMetricsDialog by remember { mutableStateOf(false) }
+    var showManageSpellSlotsDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -278,7 +283,7 @@ fun CombatScreen(
                 }
             }
 
-            // SPELL SLOTS TRACKER
+            // SPELL SLOTS TRACKER & MANAGEMENT
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -286,6 +291,11 @@ fun CombatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     SectionHeader("SLOT INCANTESIMI (ARCANE GEMS)")
+                    TextButton(onClick = { showManageSpellSlotsDialog = true }) {
+                        Icon(Icons.Default.Settings, null, tint = DndCrimson, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Modifica Slot (Lv. 1-9)", color = DndCrimson, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -297,20 +307,29 @@ fun CombatScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        val levelsWithSlots = char.spellSlotsTotal.keys.sorted().filter { (char.spellSlotsTotal[it] ?: 0) > 0 }
-                        if (levelsWithSlots.isEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                        // Find all levels 1..9 that currently have > 0 slots
+                        val activeLevels = (1..9).map { "$it" }.filter { (char.spellSlotsTotal[it] ?: 0) > 0 }
+
+                        if (activeLevels.isEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("Nessuno slot attivo.", fontSize = 13.sp, color = InkTextMuted)
-                                TextButton(onClick = { viewModel.updateSpellSlotsTotal("1", 2) }) {
-                                    Text("+ Attiva Slot Livello 1", color = DndCrimson, fontSize = 12.sp)
+                                Text("Nessuno slot incantesimo attivo.", fontSize = 13.sp, color = InkTextMuted)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = { showManageSpellSlotsDialog = true },
+                                    colors = ButtonDefaults.buttonColors(containerColor = DndCrimson)
+                                ) {
+                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Configura Slot di Livello 1-9", fontWeight = FontWeight.Bold)
                                 }
                             }
                         } else {
-                            levelsWithSlots.forEach { levelStr ->
+                            activeLevels.forEach { levelStr ->
                                 val total = char.spellSlotsTotal[levelStr] ?: 0
                                 val expended = char.spellSlotsExpended[levelStr] ?: 0
                                 val available = total - expended
@@ -325,36 +344,74 @@ fun CombatScreen(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = DndLeather,
-                                        modifier = Modifier.width(84.dp)
+                                        modifier = Modifier.width(76.dp)
                                     )
 
+                                    // Gems clickable to expend / regain
                                     Row(
                                         modifier = Modifier.weight(1f),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         (0 until total).forEach { slotIndex ->
                                             val isExpended = slotIndex < expended
                                             Box(
                                                 modifier = Modifier
-                                                    .size(26.dp)
+                                                    .size(24.dp)
                                                     .clip(CircleShape)
                                                     .background(if (!isExpended) DndArcaneBlue else ParchmentHeader)
                                                     .border(2.dp, if (!isExpended) DndArcaneBlue else ParchmentBorder, CircleShape)
-                                                .clickable {
-                                                    viewModel.toggleSpellSlot(levelStr, slotIndex)
-                                                }
+                                                    .clickable {
+                                                        viewModel.toggleSpellSlot(levelStr, slotIndex)
+                                                    }
                                             )
                                         }
                                     }
 
+                                    // Available count
                                     Text(
                                         text = "$available/$total",
                                         fontFamily = FontFamily.Serif,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp,
-                                        color = if (available > 0) DndArcaneBlue else DndRedDmg
+                                        color = if (available > 0) DndArcaneBlue else DndRedDmg,
+                                        modifier = Modifier.padding(horizontal = 6.dp)
                                     )
+
+                                    // Quick decrement / increment buttons for total slots of this level
+                                    IconButton(
+                                        onClick = { viewModel.updateSpellSlotsTotal(levelStr, (total - 1).coerceAtLeast(0)) },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(Icons.Default.Remove, contentDescription = "Riduci slot totali", tint = DndCrimsonDark, modifier = Modifier.size(15.dp))
+                                    }
+                                    IconButton(
+                                        onClick = { viewModel.updateSpellSlotsTotal(levelStr, total + 1) },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(Icons.Default.Add, contentDescription = "Aumenta slot totali", tint = DndGoldDark, modifier = Modifier.size(15.dp))
+                                    }
                                 }
+                            }
+
+                            HorizontalDivider(color = ParchmentBorder.copy(alpha = 0.5f), thickness = 1.dp)
+
+                            // Button to add higher levels or configure all levels 1..9
+                            OutlinedButton(
+                                onClick = { showManageSpellSlotsDialog = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, DndGoldDark.copy(alpha = 0.6f))
+                            ) {
+                                Icon(Icons.Default.Add, null, tint = DndCrimsonDark, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "Aggiungi / Modifica Slot Livelli Superiori (1–9)",
+                                    fontFamily = FontFamily.Serif,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DndLeather
+                                )
                             }
                         }
                     }
@@ -429,6 +486,18 @@ fun CombatScreen(
         }
     }
 
+    // Manage Spell Slots Dialog (Levels 1 to 9)
+    if (showManageSpellSlotsDialog) {
+        ManageSpellSlotsDialog(
+            currentSlots = char.spellSlotsTotal,
+            onDismiss = { showManageSpellSlotsDialog = false },
+            onSave = { updatedMap ->
+                showManageSpellSlotsDialog = false
+                viewModel.updateAllSpellSlots(updatedMap)
+            }
+        )
+    }
+
     // Add Weapon Dialog
     if (showAddWeaponDialog) {
         AddWeaponDialog(
@@ -465,6 +534,125 @@ fun CombatScreen(
             }
         )
     }
+}
+
+/**
+ * Dialog to configure spell slots for all levels from 1 to 9
+ */
+@Composable
+fun ManageSpellSlotsDialog(
+    currentSlots: Map<String, Int>,
+    onDismiss: () -> Unit,
+    onSave: (Map<String, Int>) -> Unit
+) {
+    val slotCounts = remember {
+        mutableStateMapOf<String, Int>().apply {
+            (1..9).forEach { lvl ->
+                this["$lvl"] = currentSlots["$lvl"] ?: 0
+            }
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "✨ Gestione Slot Incantesimi (1-9)",
+                fontFamily = FontFamily.Serif,
+                fontWeight = FontWeight.Bold,
+                color = DndCrimson,
+                fontSize = 19.sp
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Imposta il numero massimo di slot per ciascun cerchio magico.",
+                    fontSize = 12.sp,
+                    color = InkTextMuted
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                (1..9).forEach { lvlInt ->
+                    val lvlStr = "$lvlInt"
+                    val count = slotCounts[lvlStr] ?: 0
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (count > 0) ParchmentHeader else Color.Transparent)
+                            .border(1.dp, if (count > 0) DndGold.copy(alpha = 0.6f) else ParchmentBorder, RoundedCornerShape(8.dp))
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Livello $lvlStr",
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = if (count > 0) DndCrimsonDark else Color.Gray,
+                            modifier = Modifier.width(80.dp)
+                        )
+
+                        Text(
+                            text = if (count > 0) "$count slot" else "Inattivo",
+                            fontSize = 12.sp,
+                            color = if (count > 0) DndArcaneBlue else Color.LightGray,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        // Decrement
+                        IconButton(
+                            onClick = {
+                                val current = slotCounts[lvlStr] ?: 0
+                                if (current > 0) slotCounts[lvlStr] = current - 1
+                            },
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "Diminuisci", tint = DndCrimsonDark)
+                        }
+
+                        Text(
+                            text = "$count",
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp,
+                            color = if (count > 0) InkTextPrimary else Color.Gray,
+                            modifier = Modifier.padding(horizontal = 6.dp)
+                        )
+
+                        // Increment
+                        IconButton(
+                            onClick = {
+                                val current = slotCounts[lvlStr] ?: 0
+                                slotCounts[lvlStr] = current + 1
+                            },
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Aumenta", tint = DndGoldDark)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(slotCounts.toMap()) },
+                colors = ButtonDefaults.buttonColors(containerColor = DndCrimson)
+            ) {
+                Text("Salva Slot", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Annulla", color = InkTextMuted) }
+        }
+    )
 }
 
 @Composable

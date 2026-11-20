@@ -200,9 +200,42 @@ class OverviewViewModel(
     fun updateSpellSlotsTotal(levelStr: String, total: Int) {
         val current = _character.value ?: return
         val map = current.spellSlotsTotal.toMutableMap()
-        map[levelStr] = total.coerceAtLeast(0)
+        val safeTotal = total.coerceAtLeast(0)
+        map[levelStr] = safeTotal
+
+        val expMap = current.spellSlotsExpended.toMutableMap()
+        val currentExpended = expMap[levelStr] ?: 0
+        if (currentExpended > safeTotal) {
+            expMap[levelStr] = safeTotal
+        }
+
         viewModelScope.launch {
-            repository.updateCharacter(current.copy(spellSlotsTotal = map))
+            repository.updateCharacter(current.copy(
+                spellSlotsTotal = map,
+                spellSlotsExpended = expMap
+            ))
+        }
+    }
+
+    fun updateAllSpellSlots(newTotals: Map<String, Int>) {
+        val current = _character.value ?: return
+        val map = current.spellSlotsTotal.toMutableMap()
+        val expMap = current.spellSlotsExpended.toMutableMap()
+
+        newTotals.forEach { (lvl, total) ->
+            val safeTotal = total.coerceAtLeast(0)
+            map[lvl] = safeTotal
+            val currentExpended = expMap[lvl] ?: 0
+            if (currentExpended > safeTotal) {
+                expMap[lvl] = safeTotal
+            }
+        }
+
+        viewModelScope.launch {
+            repository.updateCharacter(current.copy(
+                spellSlotsTotal = map,
+                spellSlotsExpended = expMap
+            ))
         }
     }
 
