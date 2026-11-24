@@ -1,7 +1,7 @@
 # ⚔️ PocketSheet — D&D 5e Portable Character Sheet
 
 <p align="center">
-  <img src="prototypes/personaggio-overview.png" alt="PocketSheet Hero" width="220" style="border-radius: 16px;" />
+  <img src="prototypes/screenshot-overview.png" alt="PocketSheet Hero" width="220" style="border-radius: 16px;" />
 </p>
 
 <p align="center">
@@ -9,6 +9,15 @@
   Un'applicazione mobile nativa, leggera e reattiva con interfaccia high-fantasy ispirata ai manuali D&D, calcoli matematici 5e automatici, gestione slot incantesimi e supporto completo per importazione ed esportazione JSON.<br>
   Sviluppato da <a href="https://github.com/Gryve"><b>Gryve</b></a>.
 </p>
+
+---
+
+## 📱 Screenshot dell'App
+
+| Panoramica Personaggio | Caratteristiche & Abilità | Combattimento & Incantesimi |
+| :---: | :---: | :---: |
+| <img src="prototypes/screenshot-overview.png" alt="Panoramica Personaggio" width="260"/> | <img src="prototypes/screenshot-statistiche.png" alt="Caratteristiche e Abilità" width="260"/> | <img src="prototypes/screenshot-combat.png" alt="Combattimento e Incantesimi" width="260"/> |
+| Ritratto, classe/livello e accesso rapido alle sezioni | Modificatori, tiri salvezza e 18 abilità a 3 stati | Tracker HP, tiri contro la morte e slot incantesimi (Arcane Gems) |
 
 ---
 
